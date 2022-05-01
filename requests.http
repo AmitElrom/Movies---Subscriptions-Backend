@@ -1,0 +1,13 @@
+POST http://localhost:4000/login
+
+###
+
+POST http://localhost:4000/regis
+Content-Type: application/json
+
+{
+    "fullName" : "Avi Cohen",
+    "username" : "avicohen123",
+    "password" : "1234As"
+}
+
