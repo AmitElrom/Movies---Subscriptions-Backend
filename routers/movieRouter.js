@@ -1,10 +1,11 @@
 const express = require('express')
 const router = express.Router()
+const auth = require('../middlewares/auth')
 
 const movieBL = require('../models/movieBL')
 
 router.route('/')
-    .get(async (req,res) =>
+    .get( async (req,res) =>
     {
         try {
             let movies = await movieBL.getMovies()

@@ -7,6 +7,8 @@ const bcrypt = require('bcrypt')
 const cors = require('cors')
 const express = require('express')
 
+require('./configs/database')
+
 const app = express()
 
 app.use(cors())
@@ -14,8 +16,8 @@ app.use(express.json())
 
 const {user} = require('./models/models')
 
-app.post('/regis', async (req,res) =>
-{
+
+app.post('/regis', async (req,res) => {
     try {
         let { body : { fullName, username, password } } = req;
         const hashedPassword = await bcrypt.hash(password, 10)
@@ -23,22 +25,19 @@ app.post('/regis', async (req,res) =>
         const newUser = new user({
             fullName,
             username,
-            password : hashedPassword
+            password : hashedPassword.toString()
         })
-
-        newUser.save((err) =>
-            {
-                if(err) {
-                    res.status(500)
-                }
-                else
-                {
-                    res.status(201).send('user created')
-                }
-            })
+        
+        await newUser.save()
+            
+        
+        res.status(201).send(newUser);
+        
+        
+           
 
     } catch {
-        res.status(500).send()
+        res.status(400).send()
     }
     
 })
@@ -46,27 +45,23 @@ app.post('/regis', async (req,res) =>
 app.post('/login', async (req,res) =>
 {
     // authentication
-    let {body : {username, password}} = req;
+    let {body : {username, password }} = req;
 
-    const wantedUser = await user.find({username})
+    const wantedUser = await user.findOne({username})
     if(wantedUser == null) res.status(400).send('no such user')
     try {
         if(await bcrypt.compare(password, wantedUser.password))
         {
-            res.send('User Successfully Found')
-
             // jwt authorization
-            const { body : { id : selectedUser } } = req;
-
-            const accessToken = jwt.sign(selectedUser, process.env.ACCESS_TOKEN_SECRET)
-            res.json({accessToken})
+            const accessToken = jwt.sign(wantedUser._id.toString(), process.env.ACCESS_TOKEN_SECRET)
+            res.send({wantedUser, accessToken})
         }
         else 
         {
-            res.send('Wrong Password')
+            throw new Error({error:"Wrong Password"})
         }
-    } catch {
-        res.status(500).send()
+    } catch(e) {
+        res.status(400).send(e.message)
     }
 })
 
