@@ -28,18 +28,12 @@ app.post('/regis', async (req,res) => {
             password : hashedPassword.toString()
         })
         
-        await newUser.save()
-            
+        await newUser.save()           
         
         res.status(201).send(newUser);
-        
-        
-           
-
     } catch {
         res.status(400).send()
     }
-    
 })
 
 app.post('/login', async (req,res) =>
